@@ -1,14 +1,141 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>월드공인중개사사무소</title>
+    <style>
+        /* 기존 스타일 유지 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', sans-serif; line-height: 1.6; color: #333; background-color: #f8f9fa; padding-bottom: 50px; }
+        header { background: #2c3e50; color: white; padding: 2.5rem 1rem; text-align: center; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
+        .card h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; margin-bottom: 1.5rem; font-size: 1.4rem; }
+        
+        .info-item { display: flex; margin-bottom: 1rem; }
+        .info-label { width: 100px; font-weight: bold; color: #3498db; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; }
+        .btn { display: block; text-align: center; padding: 1rem; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.3s; cursor: pointer; border: none; }
+        .btn-call { background-color: #27ae60; color: white; }
+        .btn-primary { background-color: #3498db; color: white; width: 100%; margin-top: 10px; }
+
+        /* 댓글 섹션 스타일 */
+        #comment-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+        #comment-input, #nickname-input { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+        #nickname-input { width: 150px; }
+        
+        .comment-list { list-style: none; border-top: 1px solid #eee; }
+        .comment-item { padding: 1rem 0; border-bottom: 1px solid #eee; position: relative; }
+        .comment-author { font-weight: bold; color: #2c3e50; margin-right: 10px; }
+        .comment-date { font-size: 0.85rem; color: #999; }
+        .comment-text { margin-top: 5px; display: block; }
+        .delete-btn { position: absolute; right: 0; top: 1rem; color: #ff7675; cursor: pointer; font-size: 0.8rem; border: none; background: none; }
+
+        footer { text-align: center; padding: 2rem; color: #7f8c8d; }
+    </style>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+
+    <header>
+        <h1>월드공인중개사</h1>
+        <p>경기 성남시 분당구 야탑동 381-14</p>
+    </header>
+
+    <div class="container">
+        <!-- 사무소 정보 카드 -->
+        <div class="card">
+            <h2>연락처 정보</h2>
+            <div class="info-item"><span class="info-label">주소</span><span>야탑동 381-14</span></div>
+            <div class="info-item"><span class="info-label">일반전화</span><span>031-701-3600</span></div>
+            <div class="info-item"><span class="info-label">휴대폰</span><span>010-4882-3601</span></div>
+            <div class="btn-group">
+                <a href="tel:031-701-3600" class="btn btn-call">사무실 연결</a>
+                <a href="tel:010-4882-3601" class="btn btn-primary">담당자 직통</a>
+            </div>
+        </div>
+
+        <!-- 댓글(방문후기) 카드 -->
+        <div class="card">
+            <h2>방문후기 & 문의</h2>
+            
+            <!-- 댓글 입력 폼 -->
+            <div id="comment-form">
+                <input type="text" id="nickname-input" placeholder="닉네임" maxlength="10">
+                <textarea id="comment-input" placeholder="문의사항이나 방문 후기를 남겨주세요." rows="3"></textarea>
+                <button onclick="addComment()" class="btn btn-primary">댓글 등록</button>
+            </div>
+
+            <!-- 댓글 리스트 -->
+            <ul id="comment-list" class="comment-list">
+                <!-- 댓글이 여기에 동적으로 추가됩니다 -->
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 월드공인중개사사무소</p>
+    </footer>
+
+    <script>
+        // 페이지 로드 시 댓글 불러오기
+        document.addEventListener('DOMContentLoaded', loadComments);
+
+        function addComment() {
+            const nickname = document.getElementById('nickname-input').value;
+            const content = document.getElementById('comment-input').value;
+            const date = new Date().toLocaleDateString();
+
+            if (!nickname || !content) {
+                alert("이름과 내용을 모두 입력해주세요.");
+                return;
+            }
+
+            const comment = {
+                id: Date.now(),
+                nickname: nickname,
+                content: content,
+                date: date
+            };
+
+            let comments = JSON.parse(localStorage.getItem('world_comments') || '[]');
+            comments.unshift(comment); // 최신글이 위로
+            localStorage.setItem('world_comments', JSON.stringify(comments));
+
+            // 입력창 비우기
+            document.getElementById('nickname-input').value = '';
+            document.getElementById('comment-input').value = '';
+
+            renderComments();
+        }
+
+        function deleteComment(id) {
+            if(confirm("댓글을 삭제하시겠습니까?")) {
+                let comments = JSON.parse(localStorage.getItem('world_comments') || '[]');
+                comments = comments.filter(c => c.id !== id);
+                localStorage.setItem('world_comments', JSON.stringify(comments));
+                renderComments();
+            }
+        }
+
+        function renderComments() {
+            const list = document.getElementById('comment-list');
+            const comments = JSON.parse(localStorage.getItem('world_comments') || '[]');
+            
+            list.innerHTML = comments.map(c => `
+                <li class="comment-item">
+                    <span class="comment-author">${c.nickname}</span>
+                    <span class="comment-date">${c.date}</span>
+                    <span class="comment-text">${c.content}</span>
+                    <button class="delete-btn" onclick="deleteComment(${c.id})">삭제</button>
+                </li>
+            `).join('');
+        }
+
+        function loadComments() {
+            renderComments();
+        }
+    </script>
 </body>
 </html>
